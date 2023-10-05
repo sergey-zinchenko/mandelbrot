@@ -35,7 +35,7 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
         const __m256 cxVec1 = _mm256_add_ps(_mm256_set1_ps(MIN_X + (float) w * SCALE_X),
                                            _mm256_mul_ps(DisplacementVector, ScaleXVec));
         const __m256 cxVec2 = _mm256_add_ps(_mm256_set1_ps(MIN_X + (float) (w + 8) * SCALE_X),
-                                           _mm256_mul_ps(_mm256_add_ps(DisplacementVector, _mm256_set1_ps(8.0f)), ScaleXVec));
+                                           _mm256_mul_ps(DisplacementVector, ScaleXVec));
         __m256i nvVec1 = _mm256_setzero_si256();
         __m256i nvVec2 = _mm256_setzero_si256();
         __m256 zReVec1 = _mm256_setzero_ps();
@@ -72,8 +72,8 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             zReVec2 = zReNewVec2;
             zImVec2 = zImNewVec2;
             i2++;
-        } while (!_mm256_testz_si256(_mm256_andnot_si256(breakVec1, IdentVector), IdentVector) && i1 < MAX_ITERS &&
-                 !_mm256_testz_si256(_mm256_andnot_si256(breakVec2, IdentVector), IdentVector) && i2 < MAX_ITERS);
+        } while ((!_mm256_testz_si256(_mm256_andnot_si256(breakVec1, IdentVector), IdentVector) && i1 < MAX_ITERS) ||
+                (!_mm256_testz_si256(_mm256_andnot_si256(breakVec2, IdentVector), IdentVector) && i2 < MAX_ITERS));
         _mm256_storeu_si256((__m256i *) (pResult + offset + w), nvVec1);
         _mm256_storeu_si256((__m256i *) (pResult + mirrorOffset + w), nvVec1);
         _mm256_storeu_si256((__m256i *) (pResult + offset + w + 8), nvVec2);
