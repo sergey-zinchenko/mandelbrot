@@ -59,7 +59,7 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
 }
 
 void MandelbrotSimd(uint *pResult) {
-#pragma omp parallel for num_threads(10 * NUM_CPU) schedule(static) shared(pResult) default(none)
+#pragma omp parallel for num_threads(2 * NUM_CPU) schedule(static) shared(pResult) default(none)
     for (int h = 0; h < HEIGHT / 2; h++) {
         Mandelbrot_0_simd(h, pResult);
     }
