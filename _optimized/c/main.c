@@ -58,8 +58,7 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(maskVec1, IdentVector));
             zReVec1 = zReNewVec1;
             zImVec1 = zImNewVec1;
-            i1++;
-
+            
             const __m256 zReNewVec2 = _mm256_add_ps(
                     _mm256_sub_ps(_mm256_mul_ps(zReVec2, zReVec2), _mm256_mul_ps(zImVec2, zImVec2)), cxVec2);
             const __m256 zImNewVec2 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReVec2, zImVec2), TwoVec), cyVec);
@@ -71,7 +70,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(maskVec2, IdentVector));
             zReVec2 = zReNewVec2;
             zImVec2 = zImNewVec2;
-            i2++;
 
             const __m256 zReNewVec3 = _mm256_add_ps(
                     _mm256_sub_ps(_mm256_mul_ps(zReVec1, zReVec1), _mm256_mul_ps(zImVec1, zImVec1)), cxVec1);
@@ -84,7 +82,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(maskVec3, IdentVector));
             zReVec1 = zReNewVec3;
             zImVec1 = zImNewVec3;
-            i1++;
 
             const __m256 zReNewVec4 = _mm256_add_ps(
                     _mm256_sub_ps(_mm256_mul_ps(zReVec2, zReVec2), _mm256_mul_ps(zImVec2, zImVec2)), cxVec2);
@@ -97,7 +94,8 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(maskVec4, IdentVector));
             zReVec2 = zReNewVec4;
             zImVec2 = zImNewVec4;
-            i2++;
+            i1+=2;
+            i2+=2;
         } while ((!_mm256_testz_si256(_mm256_andnot_si256(breakVec1, IdentVector), IdentVector) && i1 < MAX_ITERS) ||
                  (!_mm256_testz_si256(_mm256_andnot_si256(breakVec2, IdentVector), IdentVector) && i2 < MAX_ITERS));
         _mm256_storeu_si256((__m256i *) (pResult + offset + w), nvVec1);
