@@ -54,16 +54,14 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
         int i2 = 0;
 
         do {
-
-            __m256 zReNewVec1 = _mm256_mul_ps(zReVec1, zReVec1);
-            __m256 zImNewVec1 = _mm256_mul_ps(zImVec1, zReVec1);
             __m256 zImVec1_pow2 = _mm256_mul_ps(zImVec1, zImVec1);
-            __m256 zReNewVec2 = _mm256_mul_ps(zReVec2, zReVec2);
-            __m256 zImNewVec2 = _mm256_mul_ps(zImVec2, zReVec2);
             __m256 zImVec2_pow2 = _mm256_mul_ps(zImVec2, zImVec2);
 
-            zReNewVec1 = _mm256_sub_ps(zReNewVec1, zImVec1_pow2);
-            zReNewVec2 = _mm256_sub_ps(zReNewVec2, zImVec2_pow2);
+            __m256 zReNewVec1 = _mm256_fmsub_ps(zReVec1, zReVec1, zImVec1_pow2);
+            __m256 zReNewVec2 = _mm256_fmsub_ps(zReVec2, zReVec2, zImVec2_pow2);
+
+            __m256 zImNewVec1 = _mm256_mul_ps(zImVec1, zReVec1);
+            __m256 zImNewVec2 = _mm256_mul_ps(zImVec2, zReVec2);
 
             zReNewVec1 = _mm256_add_ps(zReNewVec1, cxVec1);
             zReNewVec2 = _mm256_add_ps(zReNewVec2, cxVec2);
@@ -95,17 +93,16 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec1 = _mm256_add_epi32(nvVec1_epi32, nvVec1);
             nvVec2 = _mm256_add_epi32(nvVec2_epi32, nvVec2);
 
-////
+///
 
-            zReVec1 = _mm256_mul_ps(zReNewVec1, zReNewVec1);
-            zImVec1 = _mm256_mul_ps(zImNewVec1, zReNewVec1);
             zImNewVec1_pow2 = _mm256_mul_ps(zImNewVec1, zImNewVec1);
-            zReVec2 = _mm256_mul_ps(zReNewVec2, zReNewVec2);
-            zImVec2 = _mm256_mul_ps(zImNewVec2, zReNewVec2);
             zImNewVec2_pow2 = _mm256_mul_ps(zImNewVec2, zImNewVec2);
 
-            zReVec1 = _mm256_sub_ps(zReVec1, zImNewVec1_pow2);
-            zReVec2 = _mm256_sub_ps(zReVec2, zImNewVec2_pow2);
+            zReVec1 = _mm256_fmsub_ps(zReNewVec1, zReNewVec1, zImNewVec1_pow2);
+            zReVec2 = _mm256_fmsub_ps(zReNewVec2, zReNewVec2, zImNewVec2_pow2);
+
+            zImVec1 = _mm256_mul_ps(zImNewVec1, zReNewVec1);
+            zImVec2 = _mm256_mul_ps(zImNewVec2, zReNewVec2);
 
             zReVec1 = _mm256_add_ps(zReVec1, cxVec1);
             zReVec2 = _mm256_add_ps(zReVec2, cxVec2);

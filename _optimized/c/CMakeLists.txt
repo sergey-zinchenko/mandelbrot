@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 find_package(OpenMP REQUIRED)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx2 -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx2 -mfma -fopenmp")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast")
 
 add_executable(mandelbrot main.c)
