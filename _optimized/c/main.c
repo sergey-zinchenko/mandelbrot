@@ -50,9 +50,7 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
         __m256 mag2Vec1;
         __m256 mag2Vec2;
 
-        int i1 = 0;
-        int i2 = 0;
-
+        int i = 0;
         do {
             __m256 zImVec1_pow2 = _mm256_mul_ps(zImVec1, zImVec1);
             __m256 zImVec2_pow2 = _mm256_mul_ps(zImVec2, zImVec2);
@@ -134,10 +132,9 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec1 = _mm256_add_epi32(nvVec1_epi32, nvVec1);
             nvVec2 = _mm256_add_epi32(nvVec2_epi32, nvVec2);
 
-            i1 += 2;
-            i2 += 2;
-        } while ((!_mm256_testz_si256(_mm256_andnot_si256(breakVec1, IdentVector), IdentVector) && i1 < MAX_ITERS) ||
-                 (!_mm256_testz_si256(_mm256_andnot_si256(breakVec2, IdentVector), IdentVector) && i2 < MAX_ITERS));
+            i += 2;
+        } while ((!_mm256_testz_si256(_mm256_andnot_si256(breakVec1, IdentVector), IdentVector) ||
+                 !_mm256_testz_si256(_mm256_andnot_si256(breakVec2, IdentVector), IdentVector)) && i < MAX_ITERS);
         _mm256_storeu_si256((__m256i *) (pResult + offset + w), nvVec1);
         _mm256_storeu_si256((__m256i *) (pResult + mirrorOffset + w), nvVec1);
         _mm256_storeu_si256((__m256i *) (pResult + offset + w + 8), nvVec2);
