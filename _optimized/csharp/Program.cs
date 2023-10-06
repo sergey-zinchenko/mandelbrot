@@ -17,6 +17,23 @@ namespace ConsoleApp
 
         private static readonly uint[] Result = new uint[Height * Width];
         private static unsafe volatile uint* _pResult;
+        private static readonly int VectorSize = 8;
+        private static readonly int VectorCount = 2;
+        private static readonly float Four = 4.0f;
+        private static readonly float MinX = -2.0f;
+        private static readonly float MaxX = 0.47f;
+        private static readonly float MinY = -1.12f;
+        private static readonly float MaxY = 1.12f;
+        private static readonly float ScaleX = (MaxX - MinX) / Width;
+        private static readonly float ScaleY = (MaxY - MinY) / Height;
+        private static readonly int MaxIters = 256;
+
+        private static readonly Vector256<float> MinYVec = Vector256.Create(MinY);
+        private static readonly Vector256<float> ScaleXVec = Vector256.Create(ScaleX);
+        private static readonly Vector256<float> ScaleYVec = Vector256.Create(ScaleY);
+        private static readonly Vector256<float> FourVec = Vector256.Create(Four);
+        private static readonly Vector256<float> DisplacementVector = Vector256.Create(0f, 1, 2, 3, 4, 5, 6, 7);
+        private static readonly Vector256<uint> IdentVector = Vector256.Create(1u);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void MandelbrotSimd()
@@ -31,35 +48,17 @@ namespace ConsoleApp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static unsafe void Mandelbrot_0_simd(int h)
         {
-            const int vectorSize = 8;
-            const int vectorCount = 2;
-            const float four = 4.0f;
-            const float minX = -2.0f;
-            const float maxX = 0.47f;
-            const float minY = -1.12f;
-            const float maxY = 1.12f;
-            float scaleX = (maxX - minX) / Width;
-            float scaleY = (maxY - minY) / Height;
-            const int maxIters = 256;
-
-            var minYVec = Vector256.Create(minY);
-            var scaleXVec = Vector256.Create(scaleX);
-            var scaleYVec = Vector256.Create(scaleY);
-            var fourVec = Vector256.Create(four);
-            var displacementVector = Vector256.Create(0f, 1, 2, 3, 4, 5, 6, 7);
-            var identVector = Vector256.Create(1u);
-
             int offset = h * Width;
             int mirrorOffset = (Height - h - 1) * Width;
 
-            for (int w = 0; w < Width; w += vectorSize * vectorCount)
+            for (int w = 0; w < Width; w += VectorSize * VectorCount)
             {
-                var cxVec1Set = Vector256.Create(minX + w * scaleX);
-                var cxVec2Set = Vector256.Create(minX + (w + vectorSize) * scaleX);
+                var cxVec1Set = Vector256.Create(MinX + w * ScaleX);
+                var cxVec2Set = Vector256.Create(MinX + (w + VectorSize) * ScaleX);
                 var cyVecSet = Vector256.Create((float)h);
-                var cxVec1 = Fma.MultiplyAdd(displacementVector, scaleXVec, cxVec1Set);
-                var cxVec2 = Fma.MultiplyAdd(displacementVector, scaleXVec, cxVec2Set);
-                var cyVec = Fma.MultiplyAdd(cyVecSet, scaleYVec, minYVec);
+                var cxVec1 = Fma.MultiplyAdd(DisplacementVector, ScaleXVec, cxVec1Set);
+                var cxVec2 = Fma.MultiplyAdd(DisplacementVector, ScaleXVec, cxVec2Set);
+                var cyVec = Fma.MultiplyAdd(cyVecSet, ScaleYVec, MinYVec);
                 var zReVec1 = Vector256<float>.Zero;
                 var zImVec1 = Vector256<float>.Zero;
                 var zReVec2 = Vector256<float>.Zero;
@@ -96,17 +95,17 @@ namespace ConsoleApp
                     var mag2Vec1 = Avx.Add(zReNewVec1Pow2, zImNewVec1Pow2);
                     var mag2Vec2 = Avx.Add(zReNewVec2Pow2, zImNewVec2Pow2);
 
-                    var cmpVec1 = Avx.Compare(mag2Vec1, fourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
-                    var cmpVec2 = Avx.Compare(mag2Vec2, fourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    var cmpVec1 = Avx.Compare(mag2Vec1, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    var cmpVec2 = Avx.Compare(mag2Vec2, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
 
                     var breakVec1Epi32 = cmpVec1.AsUInt32();
                     var breakVec2Epi32 = cmpVec2.AsUInt32();
-                    breakVec1Epi32 = Avx2.Add(breakVec1Epi32, identVector);
-                    breakVec2Epi32 = Avx2.Add(breakVec2Epi32, identVector);
+                    breakVec1Epi32 = Avx2.Add(breakVec1Epi32, IdentVector);
+                    breakVec2Epi32 = Avx2.Add(breakVec2Epi32, IdentVector);
                     breakVec1 = Avx2.Or(breakVec1Epi32, breakVec1);
                     breakVec2 = Avx2.Or(breakVec2Epi32, breakVec2);
-                    var nvVec1Epi32 = Avx2.AndNot(breakVec1, identVector);
-                    var nvVec2Epi32 = Avx2.AndNot(breakVec2, identVector);
+                    var nvVec1Epi32 = Avx2.AndNot(breakVec1, IdentVector);
+                    var nvVec2Epi32 = Avx2.AndNot(breakVec2, IdentVector);
                     nvVec1 = Avx2.Add(nvVec1Epi32, nvVec1);
                     nvVec2 = Avx2.Add(nvVec2Epi32, nvVec2);
 
@@ -134,29 +133,29 @@ namespace ConsoleApp
                     mag2Vec1 = Avx.Add(zReVec1Pow2, zImVec1Pow2);
                     mag2Vec2 = Avx.Add(zReVec2Pow2, zImVec2Pow2);
 
-                    cmpVec1 = Avx.Compare(mag2Vec1, fourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
-                    cmpVec2 = Avx.Compare(mag2Vec2, fourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    cmpVec1 = Avx.Compare(mag2Vec1, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    cmpVec2 = Avx.Compare(mag2Vec2, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
 
                     breakVec1Epi32 = cmpVec1.AsUInt32();
                     breakVec2Epi32 = cmpVec2.AsUInt32();
-                    breakVec1Epi32 = Avx2.Add(breakVec1Epi32, identVector);
-                    breakVec2Epi32 = Avx2.Add(breakVec2Epi32, identVector);
+                    breakVec1Epi32 = Avx2.Add(breakVec1Epi32, IdentVector);
+                    breakVec2Epi32 = Avx2.Add(breakVec2Epi32, IdentVector);
                     breakVec1 = Avx2.Or(breakVec1, breakVec1Epi32);
                     breakVec2 = Avx2.Or(breakVec2, breakVec2Epi32);
 
-                    nvVec1Epi32 = Avx2.AndNot(breakVec1, identVector);
-                    nvVec2Epi32 = Avx2.AndNot(breakVec2, identVector);
+                    nvVec1Epi32 = Avx2.AndNot(breakVec1, IdentVector);
+                    nvVec2Epi32 = Avx2.AndNot(breakVec2, IdentVector);
                     nvVec1 = Avx2.Add(nvVec1Epi32, nvVec1);
                     nvVec2 = Avx2.Add(nvVec2Epi32, nvVec2);
 
-                    i += vectorCount;
-                } while ((!Avx.TestZ(Avx2.AndNot(breakVec1, identVector), identVector) ||
-                          !Avx.TestZ(Avx2.AndNot(breakVec2, identVector), identVector)) && i < maxIters);
+                    i += VectorCount;
+                } while ((!Avx.TestZ(Avx2.AndNot(breakVec1, IdentVector), IdentVector) ||
+                          !Avx.TestZ(Avx2.AndNot(breakVec2, IdentVector), IdentVector)) && i < MaxIters);
 
                 Avx.Store(_pResult + offset + w, nvVec1);
                 Avx.Store(_pResult + mirrorOffset + w, nvVec1);
-                Avx.Store(_pResult + offset + w + vectorSize, nvVec2);
-                Avx.Store(_pResult + mirrorOffset + w + vectorSize, nvVec2);
+                Avx.Store(_pResult + offset + w + VectorSize, nvVec2);
+                Avx.Store(_pResult + mirrorOffset + w + VectorSize, nvVec2);
             }
         }
 
