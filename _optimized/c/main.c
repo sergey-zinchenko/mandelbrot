@@ -25,7 +25,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
     const __m256 ScaleXVec = _mm256_set1_ps(SCALE_X);
     const __m256 ScaleYVec = _mm256_set1_ps(SCALE_Y);
     const __m256 FourVec = _mm256_set1_ps(4.0f);
-    const __m256 TwoVec = _mm256_set1_ps(2.0f);
     const __m256 DisplacementVector = _mm256_set_ps(7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f);
     const __m256i IdentVector = _mm256_set1_epi32(1);
 
@@ -115,7 +114,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             zImVec1 = _mm256_add_ps(zImVec1, cyVec);
             zImVec2 = _mm256_add_ps(zImVec2, cyVec);
 
-
             __m256 zReVec1_pow2 = _mm256_mul_ps(zReVec1, zReVec1);
             zImVec1_pow2 = _mm256_mul_ps(zImVec1, zImVec1);
             __m256 zReVec2_pow2 = _mm256_mul_ps(zReVec2, zReVec2);
@@ -124,7 +122,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             mag2Vec1 = _mm256_add_ps(zReVec1_pow2, zImVec1_pow2);
             mag2Vec2 = _mm256_add_ps(zReVec2_pow2, zImVec2_pow2);
 
-
             cmpVec1 = _mm256_cmp_ps(mag2Vec1, FourVec, _CMP_LT_OQ);
             cmpVec2 = _mm256_cmp_ps(mag2Vec2, FourVec, _CMP_LT_OQ);
 
@@ -132,10 +129,9 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             breakVec2_epi32 = _mm256_castps_si256(cmpVec2);
             breakVec1_epi32 = _mm256_add_epi32(breakVec1_epi32, IdentVector);
             breakVec2_epi32 = _mm256_add_epi32(breakVec2_epi32, IdentVector);
-            breakVec1_epi32 = _mm256_andnot_si256(breakVec1_epi32, IdentVector);
-            breakVec2_epi32 = _mm256_andnot_si256(breakVec2_epi32, IdentVector);
             breakVec1 = _mm256_or_si256(breakVec1, breakVec1_epi32);
             breakVec2 = _mm256_or_si256(breakVec2, breakVec2_epi32);
+
             nvVec1_epi32 = _mm256_andnot_si256(breakVec1, IdentVector);
             nvVec2_epi32 = _mm256_andnot_si256(breakVec2, IdentVector);
             nvVec1 = _mm256_add_epi32(nvVec1_epi32, nvVec1);
