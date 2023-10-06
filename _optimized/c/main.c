@@ -32,20 +32,22 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
     const int mirrorOffset = (HEIGHT - h - 1) * WIDTH;
     for (int w = 0; w < WIDTH; w += 16) {
     const __m256 cyVec = _mm256_add_ps(MinYVec, _mm256_mul_ps(_mm256_set1_ps((float) h), ScaleYVec));
-    const __m256 cxVec1 = _mm256_add_ps(_mm256_set1_ps(MIN_X + (float) w * SCALE_X),
-                        _mm256_mul_ps(DisplacementVector, ScaleXVec));
-    const __m256 cxVec2 = _mm256_add_ps(_mm256_set1_ps(MIN_X + (float) (w + 8) * SCALE_X),
-                        _mm256_mul_ps(DisplacementVector, ScaleXVec));
-    __m256i nvVec1 = _mm256_setzero_si256();
-    __m256i nvVec2 = _mm256_setzero_si256();
+    const __m256 ScaleXDisplacementVec = _mm256_mul_ps(DisplacementVector, ScaleXVec);
+    const __m256 MIN_XVec = _mm256_set1_ps(MIN_X);
+    const __m256 wScaleXVec = _mm256_set1_ps((float) w * SCALE_X);
+    const __m256 w8ScaleXVec = _mm256_set1_ps((float) (w + 8) * SCALE_X);
+    const __m256 cxVec1 = _mm256_add_ps(_mm256_add_ps(MIN_XVec, wScaleXVec), ScaleXDisplacementVec);
+    const __m256 cxVec2 = _mm256_add_ps(_mm256_add_ps(MIN_XVec, w8ScaleXVec), ScaleXDisplacementVec);
     __m256 zReVec1 = _mm256_setzero_ps();
     __m256 zImVec1 = _mm256_setzero_ps();
     __m256 zReVec2 = _mm256_setzero_ps();
     __m256 zImVec2 = _mm256_setzero_ps();
-    __m256 mag2Vec1;
-    __m256 mag2Vec2;
+    __m256i nvVec1 = _mm256_setzero_si256();
+    __m256i nvVec2 = _mm256_setzero_si256();
     __m256i breakVec1 = _mm256_setzero_si256();
     __m256i breakVec2 = _mm256_setzero_si256();
+    __m256 mag2Vec1;
+    __m256 mag2Vec2;
     int i1 = 0;
     int i2 = 0;
     do {
