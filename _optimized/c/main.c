@@ -46,8 +46,8 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
         __m256 zImVec2 = _mm256_setzero_ps();
         __m256i nvVec1 = _mm256_setzero_si256();
         __m256i nvVec2 = _mm256_setzero_si256();
-        __m256i breakVec1;
-        __m256i breakVec2;
+        __m256i breakVec1 = _mm256_setzero_si256();
+        __m256i breakVec2 = _mm256_setzero_si256();
         __m256 mag2Vec1;
         __m256 mag2Vec2;
 
@@ -87,8 +87,10 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
 
             __m256i breakVec1_epi32 = _mm256_castps_si256(cmpVec1);
             __m256i breakVec2_epi32 = _mm256_castps_si256(cmpVec2);
-            breakVec1 = _mm256_add_epi32(breakVec1_epi32, IdentVector);
-            breakVec2 = _mm256_add_epi32(breakVec2_epi32, IdentVector);
+            breakVec1_epi32 = _mm256_add_epi32(breakVec1_epi32, IdentVector);
+            breakVec2_epi32 = _mm256_add_epi32(breakVec2_epi32, IdentVector);
+            breakVec1 =_mm256_or_si256(breakVec1, breakVec1_epi32);
+            breakVec2 =_mm256_or_si256(breakVec2, breakVec2_epi32);
             __m256i nvVec1_epi32 = _mm256_andnot_si256(breakVec1, IdentVector);
             __m256i nvVec2_epi32 = _mm256_andnot_si256(breakVec2, IdentVector);
             nvVec1 = _mm256_add_epi32(nvVec1_epi32, nvVec1);
@@ -96,30 +98,31 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
 
 ////
 
-            zReNewVec1 = _mm256_mul_ps(zReNewVec1, zReNewVec1);
-            zImNewVec1 = _mm256_mul_ps(zImNewVec1, zReNewVec1);
-            zImVec1_pow2 = _mm256_mul_ps(zImNewVec1, zImNewVec1);
-            zReNewVec2 = _mm256_mul_ps(zReNewVec2, zReNewVec2);
-            zImNewVec2 = _mm256_mul_ps(zImNewVec2, zReNewVec2);
-            zImVec2_pow2 = _mm256_mul_ps(zImNewVec2, zImNewVec2);
-
-            zReNewVec1 = _mm256_sub_ps(zReNewVec1, zImVec1_pow2);
-            zReNewVec2 = _mm256_sub_ps(zReNewVec2, zImVec2_pow2);
-
-            zReNewVec1 = _mm256_add_ps(zReNewVec1, cxVec1);
-            zReNewVec2 = _mm256_add_ps(zReNewVec2, cxVec2);
-            zImNewVec1 = _mm256_add_ps(zImNewVec1, zImNewVec1);
-            zImNewVec2 = _mm256_add_ps(zImNewVec2, zImNewVec2);
-            zImNewVec1 = _mm256_add_ps(zImNewVec1, cyVec);
-            zImNewVec2 = _mm256_add_ps(zImNewVec2, cyVec);
-
-            zReNewVec1_pow2 = _mm256_mul_ps(zReNewVec1, zReNewVec1);
+            zReVec1 = _mm256_mul_ps(zReNewVec1, zReNewVec1);
+            zImVec1 = _mm256_mul_ps(zImNewVec1, zReNewVec1);
             zImNewVec1_pow2 = _mm256_mul_ps(zImNewVec1, zImNewVec1);
-            zReNewVec2_pow2 = _mm256_mul_ps(zReNewVec2, zReNewVec2);
+            zReVec2 = _mm256_mul_ps(zReNewVec2, zReNewVec2);
+            zImVec2 = _mm256_mul_ps(zImNewVec2, zReNewVec2);
             zImNewVec2_pow2 = _mm256_mul_ps(zImNewVec2, zImNewVec2);
 
-            mag2Vec1 = _mm256_add_ps(zReNewVec1_pow2, zImNewVec1_pow2);
-            mag2Vec2 = _mm256_add_ps(zReNewVec2_pow2, zImNewVec2_pow2);
+            zReVec1 = _mm256_sub_ps(zReVec1, zImNewVec1_pow2);
+            zReVec2 = _mm256_sub_ps(zReVec2, zImNewVec2_pow2);
+
+            zReVec1 = _mm256_add_ps(zReVec1, cxVec1);
+            zReVec2 = _mm256_add_ps(zReVec2, cxVec2);
+            zImVec1 = _mm256_add_ps(zImVec1, zImVec1);
+            zImVec2 = _mm256_add_ps(zImVec2, zImVec2);
+            zImVec1 = _mm256_add_ps(zImVec1, cyVec);
+            zImVec2 = _mm256_add_ps(zImVec2, cyVec);
+
+
+            __m256 zReVec1_pow2 = _mm256_mul_ps(zReVec1, zReVec1);
+            zImVec1_pow2 = _mm256_mul_ps(zImVec1, zImVec1);
+            __m256 zReVec2_pow2 = _mm256_mul_ps(zReVec2, zReVec2);
+            zImVec2_pow2 = _mm256_mul_ps(zImVec2, zImVec2);
+
+            mag2Vec1 = _mm256_add_ps(zReVec1_pow2, zImVec1_pow2);
+            mag2Vec2 = _mm256_add_ps(zReVec2_pow2, zImVec2_pow2);
 
 
             cmpVec1 = _mm256_cmp_ps(mag2Vec1, FourVec, _CMP_LT_OQ);
