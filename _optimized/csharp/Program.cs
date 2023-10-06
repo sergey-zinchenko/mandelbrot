@@ -16,7 +16,7 @@ namespace ConsoleApp
         private static readonly int Width = 1024;
 
         private static readonly uint[] Result = new uint[Height * Width];
-        private static unsafe volatile uint* _pResult;
+        private static unsafe uint* _pResult;
         private static readonly int VectorSize = 8;
         private static readonly int VectorCount = 2;
         private static readonly float Four = 4.0f;
