@@ -50,9 +50,10 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
     int i2 = 0;
     do {
         __m256 zReNewVec1 = _mm256_mul_ps(zReVec1, zReVec1);
-        zReNewVec1 = _mm256_sub_ps(zReNewVec1, _mm256_mul_ps(zImVec1, zImVec1));
+         __m256 zImNewVec1 = _mm256_mul_ps(zReVec1, zImVec1);
+         const __m256 zImVec1_pow2 = _mm256_mul_ps(zImVec1, zImVec1);
+        zReNewVec1 = _mm256_sub_ps(zReNewVec1, zImVec1_pow2);
         zReNewVec1 = _mm256_add_ps(zReNewVec1, cxVec1);
-        __m256 zImNewVec1 = _mm256_mul_ps(zReVec1, zImVec1);
         zImNewVec1 = _mm256_add_ps(zImNewVec1, zImNewVec1);
         zImNewVec1 = _mm256_add_ps(zImNewVec1, cyVec);
 
@@ -100,7 +101,7 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
 }
 
 void MandelbrotSimd(uint *pResult) {
-#pragma omp parallel for num_threads(2 * NUM_CPU) schedule(static) shared(pResult) default(none)
+#pragma omp parallel for num_threads(4 * NUM_CPU) schedule(static) shared(pResult) default(none)
     for (int h = 0; h < HEIGHT / 2; h++) {
         Mandelbrot_0_simd(h, pResult);
     }
