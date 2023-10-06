@@ -58,9 +58,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             zReNewVec1 = _mm256_add_ps(zReNewVec1, cxVec1);
             zReNewVec2 = _mm256_add_ps(zReNewVec2, cxVec2);
 
-            __m256 zReNewVec1_temp = zReNewVec1;
-            __m256 zReNewVec2_temp = zReNewVec2;
-
             zImNewVec1 = _mm256_mul_ps(zImNewVec1, TwoVec);
             zImNewVec2 = _mm256_mul_ps(zImNewVec2, TwoVec);
 
@@ -82,8 +79,8 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(maskVec1, IdentVector));
             nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(maskVec2, IdentVector));
 
-            zReVec1 = zReNewVec1_temp;
-            zReVec2 = zReNewVec2_temp;
+            zReVec1 = zReNewVec1;
+            zReVec2 = zReNewVec2;
 
             zImVec1 = zImNewVec1;
             zImVec2 = zImNewVec2;
@@ -101,9 +98,6 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
 
             zReNewVec1 = _mm256_add_ps(zReNewVec1, cxVec1);
             zReNewVec2 = _mm256_add_ps(zReNewVec2, cxVec2);
-
-            zReNewVec1_temp = zReNewVec1;
-            zReNewVec2_temp = zReNewVec2;
 
             zImNewVec1 = _mm256_mul_ps(zImNewVec1, TwoVec);
             zImNewVec2 = _mm256_mul_ps(zImNewVec2, TwoVec);
@@ -126,8 +120,8 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(maskVec1, IdentVector));
             nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(maskVec2, IdentVector));
 
-            zReVec1 = zReNewVec1_temp;
-            zReVec2 = zReNewVec2_temp;
+            zReVec1 = zReNewVec1;
+            zReVec2 = zReNewVec2;
 
             zImVec1 = zImNewVec1;
             zImVec2 = zImNewVec2;
