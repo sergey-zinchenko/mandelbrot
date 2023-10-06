@@ -52,44 +52,37 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
             const __m256 zReNewVec1 = _mm256_add_ps(
                     _mm256_sub_ps(_mm256_mul_ps(zReVec1, zReVec1), _mm256_mul_ps(zImVec1, zImVec1)), cxVec1);
             const __m256 zImNewVec1 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReVec1, zImVec1), TwoVec), cyVec);
-            mag2Vec1 = _mm256_add_ps(_mm256_mul_ps(zReNewVec1, zReNewVec1),
-                                                  _mm256_mul_ps(zImNewVec1, zImNewVec1));
-            breakVec1 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec1, FourVec, _CMP_LT_OQ)),
-                                                         IdentVector), breakVec1);
-            nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(breakVec1, IdentVector));
-
-            zReVec1 = _mm256_add_ps(
-                    _mm256_sub_ps(_mm256_mul_ps(zReNewVec1, zReNewVec1), _mm256_mul_ps(zImNewVec1, zImNewVec1)), cxVec1);
-            zImVec1 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReNewVec1, zImNewVec1), TwoVec), cyVec);
-            mag2Vec1 = _mm256_add_ps(_mm256_mul_ps(zReVec1, zReVec1),
-                                                  _mm256_mul_ps(zImVec1, zImVec1));
-            breakVec1 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec1, FourVec, _CMP_LT_OQ)),
-                                                         IdentVector), breakVec1);
-            nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(breakVec1, IdentVector));
-
-
             const __m256 zReNewVec2 = _mm256_add_ps(
                     _mm256_sub_ps(_mm256_mul_ps(zReVec2, zReVec2), _mm256_mul_ps(zImVec2, zImVec2)), cxVec2);
             const __m256 zImNewVec2 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReVec2, zImVec2), TwoVec), cyVec);
+            mag2Vec1 = _mm256_add_ps(_mm256_mul_ps(zReNewVec1, zReNewVec1),
+                                                  _mm256_mul_ps(zImNewVec1, zImNewVec1));
             mag2Vec2 = _mm256_add_ps(_mm256_mul_ps(zReNewVec2, zReNewVec2),
-                                                  _mm256_mul_ps(zImNewVec2, zImNewVec2));
-            breakVec2 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec2, FourVec, _CMP_LT_OQ)),
-                                                        IdentVector), breakVec2);
-            nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(breakVec2, IdentVector));
-
-            zReVec2 = _mm256_add_ps(
-                    _mm256_sub_ps(_mm256_mul_ps(zReNewVec2, zReNewVec2), _mm256_mul_ps(zImNewVec2, zImNewVec2)), cxVec2);
-            zImVec2 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReNewVec2, zImNewVec2), TwoVec), cyVec);
-            mag2Vec2 = _mm256_add_ps(_mm256_mul_ps(zReVec2, zReVec2),
-                                                  _mm256_mul_ps(zImVec2, zImVec2));
+                                     _mm256_mul_ps(zImNewVec2, zImNewVec2));
+            breakVec1 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec1, FourVec, _CMP_LT_OQ)),
+                                                         IdentVector), breakVec1);
             breakVec2 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec2, FourVec, _CMP_LT_OQ)),
                                                          IdentVector), breakVec2);
+            nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(breakVec1, IdentVector));
             nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(breakVec2, IdentVector));
-
-
+            zReVec1 = _mm256_add_ps(
+                    _mm256_sub_ps(_mm256_mul_ps(zReNewVec1, zReNewVec1), _mm256_mul_ps(zImNewVec1, zImNewVec1)), cxVec1);
+            zReVec2 = _mm256_add_ps(
+                    _mm256_sub_ps(_mm256_mul_ps(zReNewVec2, zReNewVec2), _mm256_mul_ps(zImNewVec2, zImNewVec2)), cxVec2);
+            zImVec1 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReNewVec1, zImNewVec1), TwoVec), cyVec);
+            zImVec2 = _mm256_add_ps(_mm256_mul_ps(_mm256_mul_ps(zReNewVec2, zImNewVec2), TwoVec), cyVec);
+            mag2Vec1 = _mm256_add_ps(_mm256_mul_ps(zReVec1, zReVec1),
+                                                  _mm256_mul_ps(zImVec1, zImVec1));
+            mag2Vec2 = _mm256_add_ps(_mm256_mul_ps(zReVec2, zReVec2),
+                                     _mm256_mul_ps(zImVec2, zImVec2));
+            breakVec1 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec1, FourVec, _CMP_LT_OQ)),
+                                                         IdentVector), breakVec1);
+            breakVec2 = _mm256_or_si256(_mm256_add_epi32(_mm256_castps_si256(_mm256_cmp_ps(mag2Vec2, FourVec, _CMP_LT_OQ)),
+                                                         IdentVector), breakVec2);
+            nvVec1 = _mm256_add_epi32(nvVec1, _mm256_andnot_si256(breakVec1, IdentVector));
+            nvVec2 = _mm256_add_epi32(nvVec2, _mm256_andnot_si256(breakVec2, IdentVector));
             i1+=2;
             i2+=2;
-
         } while ((!_mm256_testz_si256(_mm256_andnot_si256(breakVec1, IdentVector), IdentVector) && i1 < MAX_ITERS) ||
                  (!_mm256_testz_si256(_mm256_andnot_si256(breakVec2, IdentVector), IdentVector) && i2 < MAX_ITERS));
         _mm256_storeu_si256((__m256i *) (pResult + offset + w), nvVec1);
