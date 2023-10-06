@@ -150,9 +150,10 @@ int main() {
     uint *pResult = (uint *) calloc(HEIGHT * WIDTH, sizeof(uint));
 
 
-    double *measurements = (double *) malloc(11 * sizeof(double));
+    const int NUM_ITERATIONS = 1000;
+    double *measurements = (double *) malloc(NUM_ITERATIONS * sizeof(double));
     MandelbrotSimd(pResult);
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
         memset(pResult, 0, HEIGHT * WIDTH * sizeof(uint));
         struct timespec start;
         struct timespec end;
@@ -172,16 +173,16 @@ int main() {
     }
 
     double average = 0.0;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
         average += measurements[i];
     }
-    average /= 10.0;
+    average /= NUM_ITERATIONS;
 
     double sum_of_squares = 0.0;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
         sum_of_squares += (measurements[i] - average) * (measurements[i] - average);
     }
-    double standard_deviation = sqrt(sum_of_squares / 9.0) / average * 100.0;
+    double standard_deviation = sqrt(sum_of_squares / (NUM_ITERATIONS - 1)) / average * 100.0;
     printf("Avg: %.2fms, StdDev: %.4f%%\n", average, standard_deviation);
 
     // write to file
