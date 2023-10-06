@@ -155,7 +155,7 @@ int main() {
     uint *pResult = (uint *) calloc(HEIGHT * WIDTH, sizeof(uint));
 
 
-    const int NUM_ITERATIONS = 1000;
+    const int NUM_ITERATIONS = 10;
     double *measurements = (double *) malloc(NUM_ITERATIONS * sizeof(double));
     MandelbrotSimd(pResult);
     for (int i = 0; i < NUM_ITERATIONS; i++) {
