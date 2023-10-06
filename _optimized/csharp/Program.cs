@@ -14,7 +14,6 @@ namespace ConsoleApp
     {
         private static readonly int Height = 1024;
         private static readonly int Width = 1024;
-        private static readonly int NumCpu = Environment.ProcessorCount;
 
         private static readonly uint[] Result = new uint[Height * Width];
         private static unsafe volatile uint* _pResult;
@@ -30,15 +29,17 @@ namespace ConsoleApp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe static void Mandelbrot_0_simd(int h)
+        static unsafe void Mandelbrot_0_simd(int h)
         {
             const int vectorSize = 8;
             const int vectorCount = 2;
             const float four = 4.0f;
             const float minX = -2.0f;
-            const float minY = -1.0f;
-            float scaleX = 3.0f / Width;
-            float scaleY = 2.0f / Height;
+            const float maxX = 0.47f;
+            const float minY = -1.12f;
+            const float maxY = 1.12f;
+            float scaleX = (maxX - minX) / Width;
+            float scaleY = (maxY - minY) / Height;
             const int maxIters = 256;
 
             var minYVec = Vector256.Create(minY);
@@ -152,16 +153,16 @@ namespace ConsoleApp
                 } while ((!Avx.TestZ(Avx2.AndNot(breakVec1, identVector), identVector) ||
                           !Avx.TestZ(Avx2.AndNot(breakVec2, identVector), identVector)) && i < maxIters);
 
-                Avx.Store((_pResult + offset + w), nvVec1);
-                Avx.Store((_pResult + mirrorOffset + w), nvVec1);
-                Avx.Store((_pResult + offset + w + vectorSize), nvVec2);
-                Avx.Store((_pResult + mirrorOffset + w + vectorSize), nvVec2);
+                Avx.Store(_pResult + offset + w, nvVec1);
+                Avx.Store(_pResult + mirrorOffset + w, nvVec1);
+                Avx.Store(_pResult + offset + w + vectorSize, nvVec2);
+                Avx.Store(_pResult + mirrorOffset + w + vectorSize, nvVec2);
             }
         }
 
         public static unsafe void Main()
         {
-            Console.WriteLine("NumCpu : {0}", NumCpu);
+            Console.WriteLine("NumCpu : {0}", Environment.ProcessorCount);
             Console.WriteLine("Avx2.IsSupported : {0}", Avx2.IsSupported);
             Console.WriteLine("Avx2.IsSupported : {0}", Avx2.IsSupported);
             Console.WriteLine("Vector256.IsHardwareAccelerated : {0}", Vector256.IsHardwareAccelerated);
@@ -170,7 +171,7 @@ namespace ConsoleApp
                 _pResult = pr;
 
                 var measurements = new List<double>();
-                for (int i = -1; i < 100; i++)
+                for (int i = -1; i < 1000; i++)
                 {
                     Console.Write(i + 1 + "\t ");
                     Console.Out.Flush();
