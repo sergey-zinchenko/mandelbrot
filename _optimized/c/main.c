@@ -82,8 +82,8 @@ void inline __attribute__((always_inline)) Mandelbrot_0_simd(int h, uint *pResul
         __m256i breakVec2_epi32 = _mm256_castps_si256(cmpVec2);
         breakVec1_epi32 = _mm256_add_epi32(breakVec1_epi32, IdentVector);
         breakVec2_epi32 = _mm256_add_epi32(breakVec2_epi32, IdentVector);
-        __m256i nvVec1_epi32 = _mm256_andnot_si256(breakVec1_epi32, IdentVector);
-        __m256i nvVec2_epi32 = _mm256_andnot_si256(breakVec2_epi32, IdentVector);
+        const __m256i nvVec1_epi32 = _mm256_andnot_si256(breakVec1_epi32, IdentVector);
+        const __m256i nvVec2_epi32 = _mm256_andnot_si256(breakVec2_epi32, IdentVector);
         nvVec1 = _mm256_add_epi32(nvVec1_epi32, nvVec1);
         nvVec2 = _mm256_add_epi32(nvVec2_epi32, nvVec2);
 
