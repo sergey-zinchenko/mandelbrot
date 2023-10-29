@@ -56,9 +56,9 @@ namespace ConsoleApp
                 var cxVec1Set = Vector256.Create(MinX + w * ScaleX);
                 var cxVec2Set = Vector256.Create(MinX + (w + VectorSize) * ScaleX);
                 var cyVecSet = Vector256.Create((float)h);
-                var cxVec1 = Fma.MultiplyAdd(DisplacementVector, ScaleXVec, cxVec1Set);
-                var cxVec2 = Fma.MultiplyAdd(DisplacementVector, ScaleXVec, cxVec2Set);
-                var cyVec = Fma.MultiplyAdd(cyVecSet, ScaleYVec, MinYVec);
+                var cxVec1 = FmaCompat.MultiplyAdd(DisplacementVector, ScaleXVec, cxVec1Set);
+                var cxVec2 = FmaCompat.MultiplyAdd(DisplacementVector, ScaleXVec, cxVec2Set);
+                var cyVec = FmaCompat.MultiplyAdd(cyVecSet, ScaleYVec, MinYVec);
                 var zReVec1 = Vector256<float>.Zero;
                 var zImVec1 = Vector256<float>.Zero;
                 var zReVec2 = Vector256<float>.Zero;
@@ -71,98 +71,97 @@ namespace ConsoleApp
                 int i = 0;
                 do
                 {
-                    var zImVec1Pow2 = Avx.Multiply(zImVec1, zImVec1);
-                    var zImVec2Pow2 = Avx.Multiply(zImVec2, zImVec2);
+                    var zImVec1Pow2 = AvxCompat.Multiply(zImVec1, zImVec1);
+                    var zImVec2Pow2 = AvxCompat.Multiply(zImVec2, zImVec2);
 
-                    var zReNewVec1 = Fma.MultiplySubtract(zReVec1, zReVec1, zImVec1Pow2);
-                    var zReNewVec2 = Fma.MultiplySubtract(zReVec2, zReVec2, zImVec2Pow2);
+                    var zReNewVec1 = FmaCompat.MultiplySubtract(zReVec1, zReVec1, zImVec1Pow2);
+                    var zReNewVec2 = FmaCompat.MultiplySubtract(zReVec2, zReVec2, zImVec2Pow2);
 
-                    var zImNewVec1 = Avx.Multiply(zImVec1, zReVec1);
-                    var zImNewVec2 = Avx.Multiply(zImVec2, zReVec2);
+                    var zImNewVec1 = AvxCompat.Multiply(zImVec1, zReVec1);
+                    var zImNewVec2 = AvxCompat.Multiply(zImVec2, zReVec2);
 
-                    zReNewVec1 = Avx.Add(zReNewVec1, cxVec1);
-                    zReNewVec2 = Avx.Add(zReNewVec2, cxVec2);
-                    zImNewVec1 = Avx.Add(zImNewVec1, zImNewVec1);
-                    zImNewVec2 = Avx.Add(zImNewVec2, zImNewVec2);
-                    zImNewVec1 = Avx.Add(zImNewVec1, cyVec);
-                    zImNewVec2 = Avx.Add(zImNewVec2, cyVec);
+                    zReNewVec1 = AvxCompat.Add(zReNewVec1, cxVec1);
+                    zReNewVec2 = AvxCompat.Add(zReNewVec2, cxVec2);
+                    zImNewVec1 = AvxCompat.Add(zImNewVec1, zImNewVec1);
+                    zImNewVec2 = AvxCompat.Add(zImNewVec2, zImNewVec2);
+                    zImNewVec1 = AvxCompat.Add(zImNewVec1, cyVec);
+                    zImNewVec2 = AvxCompat.Add(zImNewVec2, cyVec);
 
-                    var zReNewVec1Pow2 = Avx.Multiply(zReNewVec1, zReNewVec1);
-                    var zImNewVec1Pow2 = Avx.Multiply(zImNewVec1, zImNewVec1);
-                    var zReNewVec2Pow2 = Avx.Multiply(zReNewVec2, zReNewVec2);
-                    var zImNewVec2Pow2 = Avx.Multiply(zImNewVec2, zImNewVec2);
+                    var zReNewVec1Pow2 = AvxCompat.Multiply(zReNewVec1, zReNewVec1);
+                    var zImNewVec1Pow2 = AvxCompat.Multiply(zImNewVec1, zImNewVec1);
+                    var zReNewVec2Pow2 = AvxCompat.Multiply(zReNewVec2, zReNewVec2);
+                    var zImNewVec2Pow2 = AvxCompat.Multiply(zImNewVec2, zImNewVec2);
 
-                    var mag2Vec1 = Avx.Add(zReNewVec1Pow2, zImNewVec1Pow2);
-                    var mag2Vec2 = Avx.Add(zReNewVec2Pow2, zImNewVec2Pow2);
+                    var mag2Vec1 = AvxCompat.Add(zReNewVec1Pow2, zImNewVec1Pow2);
+                    var mag2Vec2 = AvxCompat.Add(zReNewVec2Pow2, zImNewVec2Pow2);
 
-                    var cmpVec1 = Avx.Compare(mag2Vec1, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
-                    var cmpVec2 = Avx.Compare(mag2Vec2, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    var cmpVec1 = AvxCompat.Compare(mag2Vec1, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    var cmpVec2 = AvxCompat.Compare(mag2Vec2, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
 
                     var breakVec1Epi32 = cmpVec1.AsUInt32();
                     var breakVec2Epi32 = cmpVec2.AsUInt32();
-                    breakVec1Epi32 = Avx2.Add(breakVec1Epi32, IdentVector);
-                    breakVec2Epi32 = Avx2.Add(breakVec2Epi32, IdentVector);
-                    breakVec1 = Avx2.Or(breakVec1Epi32, breakVec1);
-                    breakVec2 = Avx2.Or(breakVec2Epi32, breakVec2);
-                    var nvVec1Epi32 = Avx2.AndNot(breakVec1, IdentVector);
-                    var nvVec2Epi32 = Avx2.AndNot(breakVec2, IdentVector);
-                    nvVec1 = Avx2.Add(nvVec1Epi32, nvVec1);
-                    nvVec2 = Avx2.Add(nvVec2Epi32, nvVec2);
+                    breakVec1Epi32 = Avx2Compat.Add(breakVec1Epi32, IdentVector);
+                    breakVec2Epi32 = Avx2Compat.Add(breakVec2Epi32, IdentVector);
+                    breakVec1 = Avx2Compat.Or(breakVec1Epi32, breakVec1);
+                    breakVec2 = Avx2Compat.Or(breakVec2Epi32, breakVec2);
+                    var nvVec1Epi32 = Avx2Compat.AndNot(breakVec1, IdentVector);
+                    var nvVec2Epi32 = Avx2Compat.AndNot(breakVec2, IdentVector);
+                    nvVec1 = Avx2Compat.Add(nvVec1Epi32, nvVec1);
+                    nvVec2 = Avx2Compat.Add(nvVec2Epi32, nvVec2);
 
-                    zImNewVec1Pow2 = Avx.Multiply(zImNewVec1, zImNewVec1);
-                    zImNewVec2Pow2 = Avx.Multiply(zImNewVec2, zImNewVec2);
+                    zImNewVec1Pow2 = AvxCompat.Multiply(zImNewVec1, zImNewVec1);
+                    zImNewVec2Pow2 = AvxCompat.Multiply(zImNewVec2, zImNewVec2);
 
-                    zReVec1 = Fma.MultiplySubtract(zReNewVec1, zReNewVec1, zImNewVec1Pow2);
-                    zReVec2 = Fma.MultiplySubtract(zReNewVec2, zReNewVec2, zImNewVec2Pow2);
+                    zReVec1 = FmaCompat.MultiplySubtract(zReNewVec1, zReNewVec1, zImNewVec1Pow2);
+                    zReVec2 = FmaCompat.MultiplySubtract(zReNewVec2, zReNewVec2, zImNewVec2Pow2);
 
-                    zImVec1 = Avx.Multiply(zImNewVec1, zReNewVec1);
-                    zImVec2 = Avx.Multiply(zImNewVec2, zReNewVec2);
+                    zImVec1 = AvxCompat.Multiply(zImNewVec1, zReNewVec1);
+                    zImVec2 = AvxCompat.Multiply(zImNewVec2, zReNewVec2);
 
-                    zReVec1 = Avx.Add(zReVec1, cxVec1);
-                    zReVec2 = Avx.Add(zReVec2, cxVec2);
-                    zImVec1 = Avx.Add(zImVec1, zImVec1);
-                    zImVec2 = Avx.Add(zImVec2, zImVec2);
-                    zImVec1 = Avx.Add(zImVec1, cyVec);
-                    zImVec2 = Avx.Add(zImVec2, cyVec);
+                    zReVec1 = AvxCompat.Add(zReVec1, cxVec1);
+                    zReVec2 = AvxCompat.Add(zReVec2, cxVec2);
+                    zImVec1 = AvxCompat.Add(zImVec1, zImVec1);
+                    zImVec2 = AvxCompat.Add(zImVec2, zImVec2);
+                    zImVec1 = AvxCompat.Add(zImVec1, cyVec);
+                    zImVec2 = AvxCompat.Add(zImVec2, cyVec);
 
-                    var zReVec1Pow2 = Avx.Multiply(zReVec1, zReVec1);
-                    zImVec1Pow2 = Avx.Multiply(zImVec1, zImVec1);
-                    var zReVec2Pow2 = Avx.Multiply(zReVec2, zReVec2);
-                    zImVec2Pow2 = Avx.Multiply(zImVec2, zImVec2);
+                    var zReVec1Pow2 = AvxCompat.Multiply(zReVec1, zReVec1);
+                    zImVec1Pow2 = AvxCompat.Multiply(zImVec1, zImVec1);
+                    var zReVec2Pow2 = AvxCompat.Multiply(zReVec2, zReVec2);
+                    zImVec2Pow2 = AvxCompat.Multiply(zImVec2, zImVec2);
 
-                    mag2Vec1 = Avx.Add(zReVec1Pow2, zImVec1Pow2);
-                    mag2Vec2 = Avx.Add(zReVec2Pow2, zImVec2Pow2);
+                    mag2Vec1 = AvxCompat.Add(zReVec1Pow2, zImVec1Pow2);
+                    mag2Vec2 = AvxCompat.Add(zReVec2Pow2, zImVec2Pow2);
 
-                    cmpVec1 = Avx.Compare(mag2Vec1, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
-                    cmpVec2 = Avx.Compare(mag2Vec2, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    cmpVec1 = AvxCompat.Compare(mag2Vec1, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
+                    cmpVec2 = AvxCompat.Compare(mag2Vec2, FourVec, FloatComparisonMode.OrderedLessThanNonSignaling);
 
                     breakVec1Epi32 = cmpVec1.AsUInt32();
                     breakVec2Epi32 = cmpVec2.AsUInt32();
-                    breakVec1Epi32 = Avx2.Add(breakVec1Epi32, IdentVector);
-                    breakVec2Epi32 = Avx2.Add(breakVec2Epi32, IdentVector);
-                    breakVec1 = Avx2.Or(breakVec1, breakVec1Epi32);
-                    breakVec2 = Avx2.Or(breakVec2, breakVec2Epi32);
+                    breakVec1Epi32 = Avx2Compat.Add(breakVec1Epi32, IdentVector);
+                    breakVec2Epi32 = Avx2Compat.Add(breakVec2Epi32, IdentVector);
+                    breakVec1 = Avx2Compat.Or(breakVec1, breakVec1Epi32);
+                    breakVec2 = Avx2Compat.Or(breakVec2, breakVec2Epi32);
 
-                    nvVec1Epi32 = Avx2.AndNot(breakVec1, IdentVector);
-                    nvVec2Epi32 = Avx2.AndNot(breakVec2, IdentVector);
-                    nvVec1 = Avx2.Add(nvVec1Epi32, nvVec1);
-                    nvVec2 = Avx2.Add(nvVec2Epi32, nvVec2);
+                    nvVec1Epi32 = Avx2Compat.AndNot(breakVec1, IdentVector);
+                    nvVec2Epi32 = Avx2Compat.AndNot(breakVec2, IdentVector);
+                    nvVec1 = Avx2Compat.Add(nvVec1Epi32, nvVec1);
+                    nvVec2 = Avx2Compat.Add(nvVec2Epi32, nvVec2);
 
                     i += VectorCount;
-                } while ((!Avx.TestZ(Avx2.AndNot(breakVec1, IdentVector), IdentVector) ||
-                          !Avx.TestZ(Avx2.AndNot(breakVec2, IdentVector), IdentVector)) && i < MaxIters);
+                } while ((!AvxCompat.TestZ(Avx2Compat.AndNot(breakVec1, IdentVector), IdentVector) ||
+                          !AvxCompat.TestZ(Avx2Compat.AndNot(breakVec2, IdentVector), IdentVector)) && i < MaxIters);
 
-                Avx.Store(_pResult + offset + w, nvVec1);
-                Avx.Store(_pResult + mirrorOffset + w, nvVec1);
-                Avx.Store(_pResult + offset + w + VectorSize, nvVec2);
-                Avx.Store(_pResult + mirrorOffset + w + VectorSize, nvVec2);
+                AvxCompat.Store(_pResult + offset + w, nvVec1);
+                AvxCompat.Store(_pResult + mirrorOffset + w, nvVec1);
+                AvxCompat.Store(_pResult + offset + w + VectorSize, nvVec2);
+                AvxCompat.Store(_pResult + mirrorOffset + w + VectorSize, nvVec2);
             }
         }
 
         public static unsafe void Main()
         {
             Console.WriteLine("NumCpu : {0}", Environment.ProcessorCount);
-            Console.WriteLine("Avx2.IsSupported : {0}", Avx2.IsSupported);
             Console.WriteLine("Avx2.IsSupported : {0}", Avx2.IsSupported);
             Console.WriteLine("Vector256.IsHardwareAccelerated : {0}", Vector256.IsHardwareAccelerated);
             fixed (uint* pr = Result)

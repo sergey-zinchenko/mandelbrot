@@ -10,4 +10,11 @@
         <PublishReadyToRunCrossgen2ExtraArgs>--instruction-set:avx</PublishReadyToRunCrossgen2ExtraArgs>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Autofac" Version="7.1.0" />
+      <PackageReference Include="microsoft.net.runtime.monotargets.sdk.msi.x64" Version="7.0.13" />
+      <PackageReference Include="microsoft.net.runtime.monotargets.sdk.msi.x64" Version="7.0.13" />
+    </ItemGroup>
+
+    
 </Project>
